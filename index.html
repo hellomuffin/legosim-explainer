@@ -97,6 +97,7 @@ a{color:var(--acc2)}
       <span>Blender render<br><em>first-person video</em></span>
     </div>
     <p class="note">The newest entry point is <b>Episode Studio</b> (<code>legosim/editor</code>). It compiles a "project" (template model, step range, scenario cards, dialogue, render settings) into the JSON contract that the shared runner (<code>legosim/episodes/runner.py</code>) executes. The latest commit (<code>tools/episodes/create_case_examples.py</code>) uses that path to batch-author 10 real-set episodes.</p>
+    <p class="note">Each Studio episode publishes three files: <code>raw_video.mp4</code>, <code>samples.jsonl</code> and <code>manifest.json</code>. <code>samples.jsonl</code> holds causal training samples: a video frame interval ending at a message boundary, the prior User/Assistant messages, and the next Assistant answer or "wait" decision as the target. <code>manifest.json</code> holds hashes, provenance and the separate validation results (engine, replay, procedure, motion, contact, media). Mistakes, assistance needs and blockers become sequential <code>scenarios</code>; User/Assistant text attaches to their lifecycle events (<i>onset → outcome → detection → verification</i>, or <i>blocked</i>).</p>
   </div>
   <div class="grid g4" id="ov-stats"></div>
   <div class="card">
