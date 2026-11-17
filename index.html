@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LegoSim, explained</title>
+<style>
+:root{--bg:#f7f6f2;--card:#fff;--ink:#1d2329;--mute:#5d6873;--line:#e2e0d8;--acc:#c8102e;--acc2:#0b6bcb;--ok:#1a7f37;--warn:#b25e00;--bad:#b42318;--err:#fde8e6;--rec:#e6f4ea;--code:#f1efe9}
+@media (prefers-color-scheme:dark){:root{--bg:#14171a;--card:#1c2025;--ink:#e8eaed;--mute:#9aa4ae;--line:#2c323a;--acc:#ff5a6e;--acc2:#5aa9ff;--ok:#4cc26b;--warn:#f0a43a;--bad:#ff6b5e;--err:#3a2224;--rec:#1e3326;--code:#23282e}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+header{padding:28px 20px 0;max-width:1180px;margin:0 auto}
+h1{margin:0 0 4px;font-size:30px;letter-spacing:-.5px}
+h1 span{color:var(--acc)}
+.sub{color:var(--mute);margin:0 0 16px}
+nav{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+nav .in{max-width:1180px;margin:0 auto;padding:0 20px;display:flex;gap:4px;overflow-x:auto}
+nav a{padding:12px 14px;color:var(--mute);text-decoration:none;font-weight:600;white-space:nowrap;border-bottom:2px solid transparent}
+nav a.on{color:var(--ink);border-color:var(--acc)}
+main{max-width:1180px;margin:0 auto;padding:20px}
+section{display:none}section.on{display:block}
+h2{font-size:22px;margin:8px 0 10px}h3{font-size:17px;margin:18px 0 8px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin:0 0 16px}
+.grid{display:grid;gap:14px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(320px,1fr))}
+.g4{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+.stat{font-size:28px;font-weight:700}.stat small{font-size:13px;color:var(--mute);font-weight:400;display:block}
+code,.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12.5px}
+code{background:var(--code);padding:1px 5px;border-radius:4px}
+pre{background:var(--code);padding:10px;border-radius:6px;overflow-x:auto;font-size:12.5px;margin:6px 0}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--mute);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.3px}
+.tw{overflow-x:auto}
+.pill{display:inline-block;padding:1px 8px;border-radius:999px;font-size:12px;font-weight:600;border:1px solid var(--line);margin:1px 2px 1px 0}
+.ok{color:var(--ok)}.warn{color:var(--warn)}.bad{color:var(--bad)}.mute{color:var(--mute)}
+video{width:100%;border-radius:8px;background:#000;display:block}
+.vid{position:relative}
+.bar{position:relative;height:14px;background:var(--code);border-radius:4px;margin:6px 0 2px;overflow:hidden;cursor:pointer}
+.bar i{position:absolute;top:0;bottom:0;opacity:.9}
+.bar i.ref{background:#9aa4ae55}.bar i.scenario{background:var(--acc)}.bar i.recovery{background:var(--ok)}.bar i.probe{background:var(--acc2)}.bar i.preparation{background:var(--warn)}
+.bar b{position:absolute;top:0;bottom:0;width:2px;background:var(--ink)}
+.chap{font-size:12.5px;max-height:220px;overflow:auto;border:1px solid var(--line);border-radius:6px}
+.chap div{padding:3px 8px;border-bottom:1px solid var(--line);cursor:pointer;display:flex;gap:8px}
+.chap div:hover{background:var(--code)}
+.chap div.scenario{background:var(--err)}.chap div.recovery{background:var(--rec)}
+.chap .t{color:var(--mute);min-width:44px}
+.legend span{display:inline-flex;align-items:center;gap:4px;margin-right:12px;font-size:12px;color:var(--mute)}
+.legend i{width:12px;height:10px;border-radius:2px;display:inline-block}
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
+.mc{background:var(--card);border:1px solid var(--line);border-radius:8px;overflow:hidden;cursor:pointer}
+.mc img{width:100%;aspect-ratio:4/3;object-fit:cover;background:#ddd;display:block}
+.mc .b{padding:6px 8px;font-size:12.5px}
+.mc .b strong{display:block;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.flt{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0 12px}
+input,select{font:inherit;padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--card);color:var(--ink)}
+#modal{position:fixed;inset:0;background:#000c;display:none;align-items:center;justify-content:center;z-index:20;padding:16px}
+#modal .box{background:var(--card);max-width:860px;width:100%;border-radius:10px;padding:14px;max-height:94vh;overflow:auto}
+.kv{display:grid;grid-template-columns:150px 1fr;gap:4px 12px;font-size:13.5px}.kv div:nth-child(odd){color:var(--mute)}
+.step{border-left:3px solid var(--acc2);padding:4px 10px;margin:6px 0;background:var(--code);border-radius:0 6px 6px 0;font-size:13px}
+.step.scenario{border-color:var(--acc)}.step.recovery{border-color:var(--ok)}
+ul.tight{margin:4px 0;padding-left:20px}ul.tight li{margin:2px 0}
+.note{font-size:13px;color:var(--mute)}
+.flow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13px}
+.flow span{background:var(--code);border:1px solid var(--line);border-radius:6px;padding:6px 9px}
+.flow em{color:var(--mute);font-style:normal}
+.toc a{color:var(--acc2);text-decoration:none;margin-right:10px;font-size:13px;white-space:nowrap}
+details summary{cursor:pointer;color:var(--acc2);font-size:13px}
+a{color:var(--acc2)}
+</style>
+</head>
+<body>
+<header>
+  <h1>Lego<span>Sim</span>, explained</h1>
+  <p class="sub">A rebuilt, re-executed tour of the first-person LEGO building simulator: which models it can finish, what each action does, and how it makes and repairs mistakes. Every video on this page was generated for this page from the repository's current code.</p>
+</header>
+<nav><div class="in">
+  <a href="#overview" data-t="overview">Overview</a>
+  <a href="#models" data-t="models">1 · Models</a>
+  <a href="#actions" data-t="actions">2 · Action space</a>
+  <a href="#mistakes" data-t="mistakes">3 · Mistakes &amp; recovery</a>
+  <a href="#notes" data-t="notes">Method &amp; caveats</a>
+</div></nav>
+<main>
+
+<!-- ======================= OVERVIEW ======================= -->
+<section id="overview">
+  <div class="card">
+    <h2>What LegoSim is</h2>
+    <p>LegoSim turns an LDraw model (<code>.mpd</code> with STEP groups) into an executable, first-person <b>building episode</b>. A rule-based <b>engine</b> holds the world state (parts, connector joints, hands, tool, bags). It accepts or refuses each requested action against connector and geometric rules. A <b>scenario controller</b> can inject a mistake, an assistance need or a blocker at an instruction boundary, then run a recovery. A <b>motion planner</b> turns every accepted action into timed hand, part and gaze trajectories. <b>Blender 4.5 Cycles</b> then renders a MakeHuman builder from a head-mounted camera.</p>
+    <div class="flow">
+      <span>LDraw model<br><em>parts · STEP groups</em></span>→
+      <span>Planner<br><em>reference action list</em></span>→
+      <span>Engine <code>World</code><br><em>accept / refuse + code</em></span>→
+      <span>Scenario controller<br><em>mistake · recovery · blocker</em></span>→
+      <span>Motion timeline<br><em>12 fps hand/part/gaze</em></span>→
+      <span>Blender render<br><em>first-person video</em></span>
+    </div>
+    <p class="note">The newest entry point is <b>Episode Studio</b> (<code>legosim/editor</code>). It compiles a "project" (template model, step range, scenario cards, dialogue, render settings) into the JSON contract that the shared runner (<code>legosim/episodes/runner.py</code>) executes. The latest commit (<code>tools/episodes/create_case_examples.py</code>) uses that path to batch-author 10 real-set episodes.</p>
+  </div>
+  <div class="grid g4" id="ov-stats"></div>
+  <div class="card">
+    <h3>World state (what an action can change)</h3>
+    <div class="tw"><table>
+      <tr><th>Field</th><th>Contents</th></tr>
+      <tr><td><code>parts</code></td><td>pid → name, colour, 4×4 pose <code>T</code> (LDraw units, 1 LDU = 0.4 mm, −y up), <code>where</code> ∈ table · hand:L · hand:R · assembly (clicked in) · resting (on the build, not clicked) · bag:k · unavailable</td></tr>
+      <tr><td><code>conns</code></td><td>connector joints <code>(a, ia, b, ib, depth/seat)</code>: male connector ia of part a engaged in female connector ib of part b. A model is a connected component.</td></tr>
+      <tr><td><code>hands</code></td><td>L/R: empty, a part id, <code>model:&lt;pid&gt;</code> (holding the build) or <code>tool:separator</code></td></tr>
+      <tr><td><code>tools</code>, <code>bags</code>, <code>supports</code></td><td>brick separator location; bag open/closed and contents; which built part a resting part lies on</td></tr>
+      <tr><td>task progress</td><td>derived each step: every part is classified <i>correct · misplaced · unseated · resting · foreign · loose</i> against the official model, plus piece count. <b>complete</b> = everything correct in no more pieces than the official model.</td></tr>
+    </table></div>
+  </div>
+</section>
+
+<!-- ======================= MODELS ======================= -->
+<section id="models">
+  <h2>1 · Which models can it build to completion?</h2>
+  <div class="card" id="mod-summary"></div>
+  <h3>Full builds rendered with the first-person human builder</h3>
+  <p class="note">Episode Studio, draft quality (320×240, 4 Cycles samples, diagnostic hand-contact mode), full step range, no mistakes. The bar shows each action's span; click it or a row to seek.</p>
+  <div class="grid g2" id="mod-human"></div>
+  <h3>All catalog models: completion videos</h3>
+  <p class="note">For each of the 212 models I ran the same Studio compile and shared runner to produce the full motion timeline. The timeline was then rendered with the repository's object observer, with the builder hidden, at 480×360. Rendering 212 full human videos was not feasible on one GPU (≈10 s/frame). The camera is framed on the finished build (a disclosed one-line patch to the observer's camera fit). Parts fly in from the table along the planned carry paths. Click a card to play.</p>
+  <div class="flt">
+    <input id="q" placeholder="Search set number or title" size="28">
+    <select id="sz"><option value="">All sizes</option><option value="0-10">≤10 parts</option><option value="11-25">11–25 parts</option><option value="26-50">26–50 parts</option><option value="51-999">&gt;50 parts</option></select>
+    <select id="vb"><option value="">Any action mix</option><option value="attach">uses sub-builds (attach)</option><option value="noattach">single build</option></select>
+    <select id="st"><option value="">Any status</option><option value="video">video ready</option><option value="pending">render pending</option></select>
+    <span class="note" id="cnt"></span>
+  </div>
+  <div class="gal" id="gal"></div>
+</section>
+
+<!-- ======================= ACTIONS ======================= -->
+<section id="actions">
+  <h2>2 · Action space</h2>
+  <div class="card">
+    <p>Every action is a method of the engine <code>World</code>. It checks its preconditions, then either <b>applies its effect</b> or is <b>refused with a failure code</b> and leaves the state unchanged. Behaviour cues (gaze, point, pause…) never change the state but get motion. The motion layer replays only accepted actions and turns each into phases (reach, pinch, lift, carry, align, press, release, withdraw).</p>
+    <p class="note">For each action: the input parameters and preconditions (from <code>legosim/reporting/actions.py</code>, the generator of <code>docs/reference/actions.md</code>), then a <b>probe episode I authored and executed</b>. Each probe is the clean Small House (1211-2) build through its first 10 actions (not rendered), followed by the demonstrated action(s). The "world-state change" lines are computed by diffing the engine observation before and after each call.</p>
+    <div class="toc" id="act-toc"></div>
+  </div>
+  <div id="act-list"></div>
+  <div class="card"><h3>Failure codes</h3><div class="tw" id="codes"></div></div>
+</section>
+
+<!-- ======================= MISTAKES ======================= -->
+<section id="mistakes">
+  <h2>3 · Mistake types: making and recovering from errors</h2>
+  <div class="card">
+    <p>A mistake is a <b>scenario</b> attached to an instruction boundary: <code>at = {step, phase: before|during|after, action}</code>. At that checkpoint the controller turns the <code>mistake</code> spec (<code>kind, target, policy: generate|explicit, substitute/members/…</code>) into <b>ordinary public engine actions</b>. Each candidate is tried on a private copy of the world, and only engine-accepted sequences that really produce the error are used; nothing edits poses directly. The resulting state is judged by the evaluator (task progress + kind-specific predicate). A <b>recovery</b> policy (<code>restore_reference</code>, <code>generate</code>, <code>explicit</code> or none) then runs, and success is verified in the engine against the reference state, with unaffected work preserved.</p>
+    <div class="legend"><span><i style="background:var(--acc)"></i>error-making actions (origin = scenario)</span><span><i style="background:var(--ok)"></i>recovery actions</span><span><i style="background:var(--warn)"></i>preparation</span><span><i style="background:#9aa4ae55"></i>reference build</span></div>
+    <div class="tw" id="mis-table"></div>
+  </div>
+  <div id="mis-list"></div>
+  <div class="card">
+    <h3>The other two scenario dimensions (not mistakes)</h3>
+    <div class="grid g2"><div><b>Assistance needs</b> (declared; add cues such as search gaze, pointing, comparison)<div id="assist"></div></div>
+    <div><b>Blockers</b> (episode stops, unresolved)<div id="block"></div></div></div>
+  </div>
+</section>
+
+<!-- ======================= NOTES ======================= -->
+<section id="notes">
+  <h2>Method &amp; caveats</h2>
+  <div class="card" id="notes-body"></div>
+</section>
+</main>
+
+<div id="modal"><div class="box" id="mbox"></div></div>
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
